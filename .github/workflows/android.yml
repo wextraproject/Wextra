@@ -1,18 +1,16 @@
-name: Build Wextra APK
+name: Android APK'sı oluşturun
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Kodlari indir
+      - name: Kodları indir
         uses: actions/checkout@v4
 
       - name: Java 17 kur
@@ -21,13 +19,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Gradle izinlerini ver
-        run: chmod +x gradlew
+      - name: Gradle kur
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Debug APK olustur
-        run: ./gradlew assembleDebug
+      - name: Debug APK oluştur
+        run: gradle assembleDebug
 
-      - name: APK yukle
+      - name: APK yükle
         uses: actions/upload-artifact@v4
         with:
           name: Wextra-APK
