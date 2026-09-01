@@ -1,8 +1,9 @@
-name: Android APK'sı oluşturun
+name: Wextra APK Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -17,16 +18,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Gradle kur
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Android proje klasörünü bul
+        run: |
+          PROJECT_DIR=$(find . -name "settings.gradle" -o -name "settings.gradle.kts" | head -n 1 | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Proje bulundu: $PROJECT_DIR"
+
       - name: Debug APK oluştur
-        run: gradle assembleDebug
+        run: |
+          gradle -p "$PROJECT_DIR" assembleDebug
 
       - name: APK yükle
         uses: actions/upload-artifact@v4
         with:
           name: Wextra-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
+          if-no-files-found: error
