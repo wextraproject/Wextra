@@ -1,0 +1,51 @@
+name: Wextra APK Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Android APK oluştur
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodları indir
+        uses: actions/checkout@v4
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle kurulumu
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Proje dosyalarını kontrol et
+        run: |
+          echo "Ana dizin:"
+          ls -la
+
+          test -f settings.gradle || test -f settings.gradle.kts
+          test -f build.gradle || test -f build.gradle.kts
+          test -d app
+
+      - name: Debug APK oluştur
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: APK dosyasını bul
+        run: |
+          find app/build/outputs/apk -type f -name "*.apk"
+
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wextra-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
