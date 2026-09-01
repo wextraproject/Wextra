@@ -1,0 +1,37 @@
+name: Build wextra APK
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java kurulumu
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: ZIP dosyasını aç
+        run: |
+          unzip wextra.zip -d project
+
+      - name: Klasörleri kontrol et
+        run: |
+          find project -maxdepth 3 -type f
+
+      - name: APK oluştur
+        working-directory: project/wextra
+        run: gradle assembleDebug
+
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: wextra-apk
+          path: project/wextra/app/build/outputs/apk/debug/app-debug.apk
