@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Post Checkout
+      - name: Repository indiriliyor
         uses: actions/checkout@v4
 
       - name: Java 17 kurulumu
@@ -30,11 +30,52 @@ jobs:
         run: |
           unzip -o wextra.zip -d project
 
-      - name: Proje kontrolü
+      - name: Java ve Kotlin uyumluluğunu düzelt
+        working-directory: project/wextra
         run: |
-          ls -la project
-          ls -la project/wextra
+          python3 - <<'PYTHON'
+          from pathlib import Path
 
+          file = Path("app/build.gradle.kts")
+          text = file.read_text()
+
+          old = '''    buildFeatures {
+              compose = true
+              buildConfig = true
+          }'''
+
+          new = '''    compileOptions {
+              sourceCompatibility = JavaVersion.VERSION_17
+              targetCompatibility = JavaVersion.VERSION_17
+          }
+
+          kotlinOptions {
+              jvmTarget = "17"
+          }
+
+          buildFeatures {
+              compose = true
+              buildConfig = true
+          }'''
+
+          if old in text:
+              text = text.replace(old, new)
+
+          file.write_text(text)
+          print("Java ve Kotlin hedef sürümü 17 olarak ayarlandı.")
+          PYTHON
+
+      - name: APK oluştur
+        working-directory: project/wextra
+        run: |
+          gradle assembleDebug --stacktrace
+
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: wextra-APK
+          path: project/wextra/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
       - name: APK oluştur
         working-directory: project/wextra
         run: gradle assembleDebug --stacktrace
