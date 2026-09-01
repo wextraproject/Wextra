@@ -1,0 +1,46 @@
+name: APK oluştur
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 17 kurulumu
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle 8.9 kurulumu
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: ZIP dosyasını aç
+        run: |
+          unzip -o wextra.zip -d project
+
+      - name: Proje kontrolü
+        run: |
+          ls -la project
+          ls -la project/wextra
+
+      - name: APK oluştur
+        working-directory: project/wextra
+        run: gradle assembleDebug --stacktrace
+
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: wextra-APK
+          path: project/wextra/app/build/outputs/apk/debug/app-debug.apk
