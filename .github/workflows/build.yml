@@ -68,11 +68,24 @@ jobs:
           print(file.read_text())
           PYTHON
 
+      - name: SHA-1 kodunu göster
+        run: |
+          PROJECT=$(find project -name settings.gradle.kts -printf '%h\n' | head -n 1)
+
+          echo "Proje: $PROJECT"
+
+          cd "$PROJECT"
+
+          gradle signingReport
+
       - name: APK oluştur
         run: |
           PROJECT=$(find project -name settings.gradle.kts -printf '%h\n' | head -n 1)
+
           echo "Proje: $PROJECT"
+
           cd "$PROJECT"
+
           gradle clean assembleDebug --stacktrace
 
       - name: APK dosyasını bul
